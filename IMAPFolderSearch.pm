@@ -16,7 +16,7 @@ require Exporter;
 
 );
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 =head1 NAME
 
@@ -219,13 +219,13 @@ sub searchFolders {
 	my $searchcount;
 	my $folders;
 	# when ALL is specified or Folders is not and array ref we get all folders
-	unless (defined($imap->{Folders})) {
-		$imap->{Folders} = 'ALL';
+	unless (defined($args->{Folders})) {
+		$args->{Folders} = 'ALL';
 	}
-	if (($imap->{Folders} =~ /^ALL$/i) or (ref($imap->{Folders}) ne 'ARRAY')) {
+	if (($args->{Folders} =~ /^ALL$/i) or (ref($args->{Folders}) ne 'ARRAY')) {
 		$folders = $imap->getFolders();
-	} elsif (ref($imap->{Folders}) eq 'ARRAY') {
-		$folders = $imap->{Folders};
+	} elsif (ref($args->{Folders}) eq 'ARRAY') {
+		$folders = $args->{Folders};
 	} 
 	foreach my $folder (@$folders) {
 		$searchcount = 0;
@@ -295,8 +295,12 @@ sub getFolders {
 	$imap->_checkOUT(Output => $folderlines) || die 'Unable to LIST any folders';
 	my ($folders, $folderlist);
 	foreach my $folder (@$folderlines) {
+		chomp $folder;
 		if ($folder =~ /^\* LIST(.*)NoSelect(.*)/i) {
 			next;
+		} elsif ($folder =~ /^\* LIST.*\"\s\"(.*)\"/i) {
+			print "DEBUGGGGGGGGGGGGGGGGGGGGG $1 GGGGGGGGGGGGGGGG\n";
+			push(@$folders,$1);
 		} else {
 			@$folderlist = split(/\s+/,$folder);
 			push(@$folders,pop(@$folderlist));
@@ -468,7 +472,13 @@ sub _selectFolder {
 	my $imap = shift;
 	my $socket = $imap->{Socket};
 	my $args = { @_ };
-	$socket->print("$imap->{Count} SELECT $args->{Folder}\r\n");
+	my $folder;
+	if ($args->{Folder} =~ /\s+/) {
+		$folder = '"' . $args->{Folder} . '"';
+	} else {
+		$folder = $args->{Folder};
+	}
+	$socket->print("$imap->{Count} SELECT $folder\r\n");
 	my $output = $imap->_readlinesIMAP();
 	$imap->_checkOUT(Output => $output) || die "Unable to SELECT $args->{Folder}";
 }
@@ -603,7 +613,7 @@ Regular expressions do not work, as per RFC 2060.
 
 =head1 AUTHOR
 
-Brian Hodges <perl@pelemele.com>
+Brian Hodges bhodgescpan ^at^ pelemele ^dot^ com
 
 =head1 SEE ALSO
 
