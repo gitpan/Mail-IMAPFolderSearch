@@ -16,7 +16,7 @@ require Exporter;
 
 );
 
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 =head1 NAME
 
@@ -299,7 +299,6 @@ sub getFolders {
 		if ($folder =~ /^\* LIST(.*)NoSelect(.*)/i) {
 			next;
 		} elsif ($folder =~ /^\* LIST.*\"\s\"(.*)\"/i) {
-			print "DEBUGGGGGGGGGGGGGGGGGGGGG $1 GGGGGGGGGGGGGGGG\n";
 			push(@$folders,$1);
 		} else {
 			@$folderlist = split(/\s+/,$folder);
@@ -613,7 +612,7 @@ Regular expressions do not work, as per RFC 2060.
 
 =head1 AUTHOR
 
-Brian Hodges bhodgescpan ^at^ pelemele ^dot^ com
+Brian Hodges <bhodgescpan ^at^ pelemele ^dot^ com>
 
 =head1 SEE ALSO
 
